@@ -1,6 +1,6 @@
 var ball;
 var ballRadius = 1.5;
-var ballSpeed = 1;
+var ballSpeed = 1.5;
 var ballColor = 0x00ffff;
 var ballDirection;
 var prevBallPosition = new THREE.Vector3(0, 0, 0);
@@ -8,16 +8,21 @@ var prevBallPosition = new THREE.Vector3(0, 0, 0);
 var MAX_TRAIL_LENGTH = 50000;
 var trailPos = 0;
 
+var MAX_FACE_WIREFRAME_LENGTH = 150000;
+var faceWireframePos = 0;
+
 var raycaster;
 
 var prevIntersectionPoint;
 var nextIntersectionPoint;
 var nextIntersectionDirection;
+var nextIntersectionFace;
 var distanceToNextPoint;
 var distanceTraveled;
 
 var currSegmentTrail;
 var trailHistory;
+var faceWireframe;
 
 function initBall(scene) {
     // add ball geometry to the scene
@@ -55,6 +60,18 @@ function initBall(scene) {
 
     scene.add(currSegmentTrail);
 
+    // create face wireframe line additions, and add it to the scene
+    var wireframeMaterial = new THREE.LineBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.5});
+    faceWireframe = new THREE.Line(new THREE.Geometry(), wireframeMaterial, THREE.LinePieces);
+    faceWireframe.geometry.dynamic = true;
+    faceWireframe.frustumCulled = false;
+
+    for (var i=0; i < MAX_FACE_WIREFRAME_LENGTH; i++){
+        faceWireframe.geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    }
+
+    scene.add(faceWireframe);
+
     raycaster = new THREE.Raycaster();
 }
 
@@ -82,6 +99,7 @@ function updateBallPosition() {
 
     if ((distanceTraveled + ballRadius) > distanceToNextPoint) {
         addSegmentToHistoryTrail(prevIntersectionPoint, ball.position.clone());
+        addWireframePoint(ball.position.clone(), nextIntersectionFace);
 
         ballDirection = nextIntersectionDirection;
 
@@ -97,11 +115,12 @@ function calcNextIntersectionPoint(origin, direction) {
     if (intersectionResult.length > 0) {
         nextIntersectionPoint = intersectionResult[0].point;
         nextIntersectionDirection = intersectionResult[0].face.normal;
+        nextIntersectionFace = intersectionResult[0].face;
 
         // add some randomness to the bounce direction, to make things more interesting..
-        nextIntersectionDirection.x += (Math.random() - 0.5) * 0.2;
-        nextIntersectionDirection.y += (Math.random() - 0.5) * 0.2;
-        nextIntersectionDirection.z += (Math.random() - 0.5) * 0.2;
+        nextIntersectionDirection.x += (Math.random() - 0.5) * 0.8;
+        nextIntersectionDirection.y += (Math.random() - 0.5) * 0.8;
+        nextIntersectionDirection.z += (Math.random() - 0.5) * 0.8;
         nextIntersectionDirection.normalize();
 
         distanceToNextPoint = origin.distanceTo(nextIntersectionPoint);
@@ -136,4 +155,40 @@ function updateCurrSegmentTrail(startPoint, endPoint) {
     vertices[1].z = endPoint.z;
 
     currSegmentTrail.geometry.verticesNeedUpdate = true;
+}
+
+function addWireframePoint(hitPoint, face) {
+    var meshVertices = meshObject.geometry.attributes.position.array;
+
+    var vertices = faceWireframe.geometry.vertices;
+
+    // first line
+    vertices[faceWireframePos * 6].x = meshVertices[face.a * 3];
+    vertices[faceWireframePos * 6].y = meshVertices[face.a * 3 + 1];
+    vertices[faceWireframePos * 6].z = meshVertices[face.a * 3 + 2];
+
+    vertices[faceWireframePos * 6 + 1].x = hitPoint.x;
+    vertices[faceWireframePos * 6 + 1].y = hitPoint.y;
+    vertices[faceWireframePos * 6 + 1].z = hitPoint.z;
+
+    // second line
+    vertices[faceWireframePos * 6 + 2].x = meshVertices[face.b * 3];
+    vertices[faceWireframePos * 6 + 2].y = meshVertices[face.b * 3 + 1];
+    vertices[faceWireframePos * 6 + 2].z = meshVertices[face.b * 3 + 2];
+
+    vertices[faceWireframePos * 6 + 3].x = hitPoint.x;
+    vertices[faceWireframePos * 6 + 3].y = hitPoint.y;
+    vertices[faceWireframePos * 6 + 3].z = hitPoint.z;
+
+    // third line
+    vertices[faceWireframePos * 6 + 4].x = meshVertices[face.c * 3];
+    vertices[faceWireframePos * 6 + 4].y = meshVertices[face.c * 3 + 1];
+    vertices[faceWireframePos * 6 + 4].z = meshVertices[face.c * 3 + 2];
+
+    vertices[faceWireframePos * 6 + 5].x = hitPoint.x;
+    vertices[faceWireframePos * 6 + 5].y = hitPoint.y;
+    vertices[faceWireframePos * 6 + 5].z = hitPoint.z;
+
+    faceWireframe.geometry.verticesNeedUpdate = true;
+    faceWireframePos = faceWireframePos + 1;
 }
