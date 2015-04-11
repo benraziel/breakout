@@ -1,14 +1,14 @@
 var ball;
-var ballRadius = 1.5;
-var ballSpeed = 1.5;
+var ballRadius = 0.8;
+var ballSpeed = 5;
 var ballColor = 0x00ffff;
 var ballDirection;
 var prevBallPosition = new THREE.Vector3(0, 0, 0);
 
-var MAX_TRAIL_LENGTH = 50000;
+var MAX_TRAIL_LENGTH = 100000;
 var trailPos = 0;
 
-var MAX_FACE_WIREFRAME_LENGTH = 150000;
+var MAX_FACE_WIREFRAME_LENGTH = 300000;
 var faceWireframePos = 0;
 
 var raycaster;
@@ -121,11 +121,19 @@ function calcNextIntersectionPoint(origin, direction) {
         nextIntersectionDirection.x += (Math.random() - 0.5) * 0.8;
         nextIntersectionDirection.y += (Math.random() - 0.5) * 0.8;
         nextIntersectionDirection.z += (Math.random() - 0.5) * 0.8;
-        nextIntersectionDirection.normalize();
-
-        distanceToNextPoint = origin.distanceTo(nextIntersectionPoint);
-        distanceTraveled = 0.0;
     }
+    else {
+        console.log("no intersection found, shooting to 0,0");
+        nextIntersectionPoint = new THREE.Vector3(0, 0, 0);
+        nextIntersectionDirection.x = -origin.x;
+        nextIntersectionDirection.y = -origin.y;
+        nextIntersectionDirection.z = -origin.z;
+
+    }
+
+    nextIntersectionDirection.normalize();
+    distanceToNextPoint = origin.distanceTo(nextIntersectionPoint);
+    distanceTraveled = 0.0;
 }
 
 function addSegmentToHistoryTrail(startPoint, endPoint) {
