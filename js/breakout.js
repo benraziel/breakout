@@ -1,6 +1,6 @@
 var ball;
 var ballRadius = 0.8;
-var ballSpeed = 5;
+var ballSpeed = 10;
 var ballColor = 0x00ffff;
 var ballDirection;
 var prevBallPosition = new THREE.Vector3(0, 0, 0);
@@ -86,18 +86,29 @@ function updateBallPosition() {
         calcNextIntersectionPoint(ball.position, ballDirection);
     }
 
-    prevBallPosition.x = ball.position.x;
-    prevBallPosition.y = ball.position.y;
-    prevBallPosition.z = ball.position.z;
+    var intersectionReached = false;
+    var movementSteps = 20;
+    var stepSize = 1.0 / movementSteps;
 
-    ball.position.x += ballDirection.x * ballSpeed;
-    ball.position.y += ballDirection.y * ballSpeed;
-    ball.position.z += ballDirection.z * ballSpeed;
+    for (var i = 0; i < movementSteps; i++) {
+        prevBallPosition.x = ball.position.x;
+        prevBallPosition.y = ball.position.y;
+        prevBallPosition.z = ball.position.z;
 
-    distanceTraveled += prevBallPosition.distanceTo(ball.position);
+        ball.position.x += ballDirection.x * ballSpeed * stepSize;
+        ball.position.y += ballDirection.y * ballSpeed * stepSize;
+        ball.position.z += ballDirection.z * ballSpeed * stepSize;
+        distanceTraveled += prevBallPosition.distanceTo(ball.position);
+
+        if ((distanceTraveled + ballRadius) > distanceToNextPoint) {
+            intersectionReached = true;
+            break;
+        }
+    }
+
     updateCurrSegmentTrail(prevIntersectionPoint, ball.position);
 
-    if ((distanceTraveled + ballRadius) > distanceToNextPoint) {
+    if (intersectionReached) {
         addSegmentToHistoryTrail(prevIntersectionPoint, ball.position.clone());
         addWireframePoint(ball.position.clone(), nextIntersectionFace);
 
