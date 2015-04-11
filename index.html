@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>three.js webgl - loaders - OBJ loader</title>
+    <title>Breakout</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
@@ -56,9 +56,9 @@
         document.body.appendChild( container );
 
         camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 800 );
-        camera.position.x = -30.5;
-        camera.position.y = -100.4;
-        camera.position.z = 14.6;
+        camera.position.x = 75;
+        camera.position.y = -10;
+        camera.position.z = 20;
 
         camera.up.x = 0;
         camera.up.y = 0;
@@ -66,9 +66,9 @@
 
         // controls
         controls = new THREE.OrbitControls( camera );
-        controls.panUp(-30);
-        controls.panLeft(15);
-        controls.update();
+//        controls.panUp(-30);
+//        controls.panLeft(15);
+//        controls.update();
 
         // scene
         scene = new THREE.Scene();
@@ -102,7 +102,7 @@
         // model
 
         var loader = new THREE.OBJLoader( manager );
-        loader.load('assets/stanford_bunny_309_faces.obj', function ( object ) {
+        loader.load('assets/bear.obj', function ( object ) {
             console.log(object);
 
             object.traverse( function ( child ) {
