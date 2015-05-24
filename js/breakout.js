@@ -1,7 +1,7 @@
 var ball;
-var ballRadius = 0.8;
-var ballSpeed = 10;
-var ballColor = 0x00ffff;
+var ballRadius = 1.5;
+var ballSpeed = 0.6;
+var ballColor = 0x33ffff;
 var ballDirection;
 var prevBallPosition = new THREE.Vector3(0, 0, 0);
 
@@ -39,7 +39,7 @@ function initBall(scene) {
     ballDirection.normalize();
 
     // create the ball trail, add it to the scene
-    var trailHistoryMaterial = new THREE.LineBasicMaterial({ color: ballColor, transparent: true, opacity: 0.5});
+    var trailHistoryMaterial = new THREE.LineBasicMaterial({ color: ballColor, transparent: true, opacity: 1.0});
     trailHistory = new THREE.Line(new THREE.Geometry(), trailHistoryMaterial, THREE.LinePieces);
     trailHistory.geometry.dynamic = true;
     trailHistory.frustumCulled = false;
@@ -61,7 +61,7 @@ function initBall(scene) {
     scene.add(currSegmentTrail);
 
     // create face wireframe line additions, and add it to the scene
-    var wireframeMaterial = new THREE.LineBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.5});
+    var wireframeMaterial = new THREE.LineBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 1.0});
     faceWireframe = new THREE.Line(new THREE.Geometry(), wireframeMaterial, THREE.LinePieces);
     faceWireframe.geometry.dynamic = true;
     faceWireframe.frustumCulled = false;
@@ -129,9 +129,9 @@ function calcNextIntersectionPoint(origin, direction) {
         nextIntersectionFace = intersectionResult[0].face;
 
         // add some randomness to the bounce direction, to make things more interesting..
-        nextIntersectionDirection.x += (Math.random() - 0.5) * 0.8;
-        nextIntersectionDirection.y += (Math.random() - 0.5) * 0.8;
-        nextIntersectionDirection.z += (Math.random() - 0.5) * 0.8;
+        nextIntersectionDirection.x += (Math.random() - 0.5) * 1.2;
+        nextIntersectionDirection.y += (Math.random() - 0.5) * 1.2;
+        nextIntersectionDirection.z += (Math.random() - 0.5) * 1.2;
     }
     else {
         console.log("no intersection found, shooting to 0,0");

@@ -36,12 +36,19 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script src="js/breakout.js"></script>
 
+<script src="js/lib/Wagner.js"></script>
+<script src="js/lib/Wagner.base.js"></script>
+<script src="js/lib/ShaderLoader.js"></script>
+
 <script>
 
     var container;
 
-    var camera, scene, renderer, controls;
+    var camera, scene, renderer, composer, controls;
     var meshObject;
+
+    var fullBoxBlurPass = new WAGNER.FullBoxBlurPass();
+    var toonPass = new WAGNER.ToonPass();
 
     var windowHalfX = window.innerWidth / 2;
     var windowHalfY = window.innerHeight / 2;
@@ -81,7 +88,6 @@
         scene.add( directionalLight );
 
         // texture
-
         var manager = new THREE.LoadingManager();
         manager.onProgress = function ( item, loaded, total ) {
 
@@ -102,7 +108,7 @@
         // model
 
         var loader = new THREE.OBJLoader( manager );
-        loader.load('assets/bear.obj', function ( object ) {
+        loader.load('assets/bunny.obj', function ( object ) {
             console.log(object);
 
             object.traverse( function ( child ) {
@@ -113,7 +119,8 @@
                     // reverse face winding direction - because we want to intereset the geometry with the inside of the mesh
                     reverseFaceWinding(child.geometry);
 
-                    var wireframe = new THREE.WireframeHelper(child, 0xffffff);
+                    var wireframe = new THREE.WireframeHelper(child, 0xffff00);
+                    wireframe.material.transparent = true;
                     scene.add(wireframe);
 
                     meshObject = child;
@@ -126,9 +133,14 @@
         }, onProgress, onError );
 
 
-        renderer = new THREE.WebGLRenderer( {antialias: true});
+        renderer = new THREE.WebGLRenderer( {antialias: true, preserveDrawingBuffer: true, alpha: true});
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
+
+        composer = new WAGNER.Composer( renderer, { useRGBA: false } );
+
+        composer.setSize( window.innerWidth, window.innerHeight ); // or whatever resolution
+
         container.appendChild( renderer.domElement );
 
         window.addEventListener( 'resize', onWindowResize, false );
@@ -155,7 +167,14 @@
     }
 
     function render() {
-        renderer.render( scene, camera );
+        composer.reset();
+        composer.render( scene, camera );
+
+        fullBoxBlurPass.params.amount = 0.4;
+        composer.pass( fullBoxBlurPass );
+
+        composer.pass(toonPass);
+        composer.toScreen();
     }
 
     function reverseFaceWinding(bufferGeometry) {
